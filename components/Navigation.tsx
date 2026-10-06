@@ -20,6 +20,21 @@ export default function Navigation() {
   const [activeSection, setActiveSection] = useState<string>("hero");
   const [audioEnabled, setAudioEnabled]   = useState<boolean>(false);
   const [mobileOpen, setMobileOpen]       = useState<boolean>(false);
+  const [isPastHeroMobile, setIsPastHeroMobile] = useState<boolean>(false);
+
+  /* ── Track scroll position on mobile to show/hide navbar ─────────────────── */
+  useEffect(() => {
+    const handleScroll = () => {
+      // On mobile screens (< 768px), hero is at least 80vh high
+      // Show navbar only after user scrolls down past the hero threshold (~60% of viewport)
+      const threshold = window.innerHeight * 0.55;
+      setIsPastHeroMobile(window.scrollY > threshold);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   /* ── Scroll-spy ──────────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -169,90 +184,78 @@ export default function Navigation() {
       </motion.nav>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          MOBILE NAV
+          MOBILE NAV (hidden in hero section on mobile, visible on scroll)
       ══════════════════════════════════════════════════════════════════════ */}
-      <motion.nav
-        initial={{ opacity: 0, y: -24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 md:hidden w-[calc(100%-2rem)]"
-      >
-        <div className="flex items-center justify-between rounded-full px-4 py-2.5 bg-white/85 backdrop-blur-xl border border-[#E2E0D4] shadow-lg">
-
-          {/* ── Logo ── */}
-          <div className="relative w-8 h-8 flex-shrink-0">
-            {onHero && (
-              <motion.span
-                layoutId="mobile-nav-active"
-                className="absolute inset-0 rounded-sm bg-neutral-900"
-                transition={{ type: "spring", stiffness: 380, damping: 34 }}
-              />
-            )}
-            <span
-              className={`
-                relative z-10 w-full h-full
-                flex items-center justify-center
-                border rounded-sm
-                text-xs font-bold tracking-widest select-none
-                transition-colors duration-200
-                ${onHero ? "border-transparent text-white" : "border-[#E2E0D4] text-neutral-800"}
-              `}
-            >
-              AS
-            </span>
-          </div>
-
-          {/* ── Current section label (center) ── */}
-          <div className="flex-1 flex items-center justify-center overflow-hidden px-2">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={activeSection || "home"}
-                initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
-                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] as const }}
-                className="text-[11px] font-mono tracking-[0.22em] uppercase text-neutral-500 whitespace-nowrap select-none"
-              >
-                {onHero
-                  ? "Portfolio"
-                  : (NAV_LINKS.find((l) => l.id === activeSection)?.label ?? "Portfolio")}
-              </motion.span>
-            </AnimatePresence>
-          </div>
-
-          {/* ── Hamburger / Close ── */}
-          <motion.button
-            whileTap={{ scale: 0.88 }}
-            onClick={() => setMobileOpen((prev) => !prev)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-neutral-700"
+      <AnimatePresence>
+        {isPastHeroMobile && (
+          <motion.nav
+            key="mobile-nav"
+            initial={{ opacity: 0, y: -28 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -28 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 md:hidden w-[calc(100%-2rem)]"
           >
-            <AnimatePresence mode="wait" initial={false}>
-              {mobileOpen ? (
-                <motion.span
-                  key="x"
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  <X size={20} strokeWidth={2} />
-                </motion.span>
-              ) : (
-                <motion.span
-                  key="menu"
-                  initial={{ rotate: 90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: -90, opacity: 0 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  <Menu size={20} strokeWidth={2} />
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
-        </div>
-      </motion.nav>
+            <div className="flex items-center justify-between rounded-full px-4 py-2.5 bg-white/85 backdrop-blur-xl border border-[#E2E0D4] shadow-lg">
+
+              {/* ── Logo ── */}
+              <div className="relative w-8 h-8 flex-shrink-0">
+                <span className="relative z-10 w-full h-full flex items-center justify-center border border-[#E2E0D4] rounded-sm text-xs font-bold tracking-widest text-neutral-800 select-none">
+                  AS
+                </span>
+              </div>
+
+              {/* ── Current section label (center) ── */}
+              <div className="flex-1 flex items-center justify-center overflow-hidden px-2">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={activeSection || "portfolio"}
+                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                    transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] as const }}
+                    className="text-[11px] font-mono tracking-[0.22em] uppercase text-neutral-500 whitespace-nowrap select-none"
+                  >
+                    {NAV_LINKS.find((l) => l.id === activeSection)?.label ?? "Portfolio"}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+
+              {/* ── Hamburger / Close ── */}
+              <motion.button
+                whileTap={{ scale: 0.88 }}
+                onClick={() => setMobileOpen((prev) => !prev)}
+                aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-neutral-700"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {mobileOpen ? (
+                    <motion.span
+                      key="x"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      <X size={20} strokeWidth={2} />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="menu"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      <Menu size={20} strokeWidth={2} />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
 
       {/* ══════════════════════════════════════════════════════════════════════
           MOBILE FULLSCREEN OVERLAY MENU
