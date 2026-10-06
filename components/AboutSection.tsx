@@ -417,7 +417,7 @@ export default function AboutSection() {
             </h2>
 
             <p className="text-stone-600 text-base sm:text-lg leading-relaxed max-w-md">
-              Final-year B.Tech in Computer Science and Engineering student at Carmel College of
+              B.Tech Computer Science & Engineering graduate (CGPA: 6.91) from Carmel College of
               Engineering and Technology (CCET), Alappuzha, affiliated with APJ Abdul Kalam
               Technological University (KTU). Passionate about software development with skills in
               full-stack web development, mobile applications, and AI/ML technologies.

@@ -145,7 +145,7 @@ export default function ContactSection() {
           animate={isInView ? "visible" : "hidden"}
           className="text-white/50 text-base md:text-xl max-w-xl leading-relaxed"
         >
-          I&rsquo;m a final-year CS student open to internships, collaborations,
+          I&rsquo;m a B.Tech CSE graduate open to full-time roles, collaborations,
           and exciting projects.{" "}
           <br className="hidden md:block" />
           Let&rsquo;s talk!

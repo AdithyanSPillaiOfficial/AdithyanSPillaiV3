@@ -360,7 +360,7 @@ export default function HeroSection() {
             transition={{ delay: 0.7, duration: 0.65, ease }}
             className="text-[13px] text-[#666] leading-relaxed max-w-[260px]"
           >
-            Final-year B.Tech CS at CCET, Alappuzha.
+            B.Tech CSE graduate (CGPA: 6.91) from CCET, Alappuzha.
             Building scalable web apps, mobile experiences&nbsp;&amp; AI&nbsp;tools.
           </motion.p>
 
@@ -506,7 +506,7 @@ export default function HeroSection() {
           items-center justify-between px-20"
       >
         <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-[#AAA]">
-          B.Tech CSE · CCET · KTU
+          B.Tech CSE Graduate · CCET · KTU
         </span>
         <div className="flex items-center gap-1.5 flex-wrap justify-center">
           {["React", "Node.js", "Flutter", "Python", "AI/ML"].map((s, i) => (

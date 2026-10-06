@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -46,37 +46,26 @@ const TECH_ELEMENTS: TechElement[] = [
   { symbol: "Gi",  name: "Git",         number: 18, category: "Tools",     color: "#F05032" },
   { symbol: "Lx",  name: "Linux",       number: 19, category: "Tools",     color: "#FCC624" },
   { symbol: "Ap",  name: "Apache",      number: 20, category: "Tools",     color: "#D22128" },
-  { symbol: "Dns", name: "DNS",         number: 21, category: "Tools",     color: "#0078D4" },
+  { symbol: "Vs",  name: "VS Code",     number: 21, category: "Tools",     color: "#007ACC" },
   { symbol: "Pr",  name: "Premiere",    number: 22, category: "Creative",  color: "#9999FF" },
   { symbol: "Ae",  name: "After Fx",    number: 23, category: "Creative",  color: "#9999FF" },
-  { symbol: "Ps",  name: "Photoshop",   number: 24, category: "Creative",  color: "#31A8FF" },
+  { symbol: "Ph",  name: "Photoshop",   number: 24, category: "Creative",  color: "#31A8FF" },
   { symbol: "Ai",  name: "AI / ML",     number: 25, category: "AI/ML",     color: "#FF6B35" },
   { symbol: "Ml",  name: "Mach. Learn", number: 26, category: "AI/ML",     color: "#FF8C42" },
 ];
 
 const CATEGORIES: Category[] = [
-  "Languages",
-  "Frontend",
-  "Backend",
-  "Database",
-  "Mobile",
-  "Tools",
-  "Creative",
-  "AI/ML",
+  "Languages", "Frontend", "Backend", "Database",
+  "Mobile", "Tools", "Creative", "AI/ML",
 ];
 
-// Periodic-table-style layout: each row is a list of element numbers (1-based).
-// `null` values are gap spacers for authentic PT feel.
+// ─── Compact 5-row × 8-col layout, grouped by family ─────────────────────────
 const PT_LAYOUT: (number | null)[][] = [
-  [1,    2,    null, null, null, null, 7,    8,    9   ],
-  [3,    4,    null, null, null, null, 10,   11,   null],
-  [5,    6,    null, null, null, null, null, null, null],
-  [null, null, 12,   13,   null, null, null, null, null],
-  [null, null, 14,   15,   null, null, null, null, null],
-  [null, null, null, null, 16,   17,   null, null, null],
-  [null, null, 18,   19,   20,   21,   null, null, null],
-  [null, null, 22,   23,   24,   null, null, null, null],
-  [null, null, null, null, null, null, 25,   26,   null],
+  [  1,  2,  3, null,  7,  8,  9, null ],
+  [  4,  5,  6, null, 10, 11, null, null ],
+  [ 12, 13, null, 14, 15, null, 16, 17 ],
+  [ 18, 19, 20, 21, null, 22, 23, 24 ],
+  [ 25, 26, null, null, null, null, null, null ],
 ];
 
 // ─── Category meta ────────────────────────────────────────────────────────────
@@ -124,7 +113,7 @@ const ELEMENT_DESCRIPTIONS: Record<string, string> = {
   "Git":         "Distributed version control system for tracking and collaborating on code.",
   "Linux":       "Open-source OS and server environment I use for development and deployment.",
   "Apache":      "Widely deployed open-source HTTP server for hosting web applications.",
-  "DNS":         "Domain Name System configuration and management for reliable networking.",
+  "VS Code":     "Microsoft's powerful, extensible code editor — my primary development environment.",
   "Premiere":    "Adobe Premiere Pro for professional video editing and post-production.",
   "After Fx":    "Adobe After Effects for motion graphics, VFX, and compositing.",
   "Photoshop":   "Adobe Photoshop for image editing, compositing, and digital art.",
@@ -132,7 +121,124 @@ const ELEMENT_DESCRIPTIONS: Record<string, string> = {
   "Mach. Learn": "Training and deploying machine learning models for predictive tasks.",
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Tech logos via Devicons CDN ──────────────────────────────────────────────
+
+const D = "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons";
+
+const LOGO_CDN: Record<string, string> = {
+  "C":           `${D}/c/c-original.svg`,
+  "C++":         `${D}/cplusplus/cplusplus-original.svg`,
+  "Python":      `${D}/python/python-original.svg`,
+  "JavaScript":  `${D}/javascript/javascript-original.svg`,
+  "TypeScript":  `${D}/typescript/typescript-original.svg`,
+  "PHP":         `${D}/php/php-original.svg`,
+  "React.js":    `${D}/react/react-original.svg`,
+  "HTML5":       `${D}/html5/html5-original.svg`,
+  "CSS3":        `${D}/css3/css3-original.svg`,
+  "Three.js":    `${D}/threejs/threejs-original.svg`,
+  "Node.js":     `${D}/nodejs/nodejs-original.svg`,
+  "Express":     `${D}/express/express-original.svg`,
+  "MongoDB":     `${D}/mongodb/mongodb-original.svg`,
+  "Flutter":     `${D}/flutter/flutter-original.svg`,
+  "Android":     `${D}/android/android-original.svg`,
+  "Git":         `${D}/git/git-original.svg`,
+  "Linux":       `${D}/linux/linux-original.svg`,
+  "Apache":      `${D}/apache/apache-original.svg`,
+  "VS Code":     `${D}/vscode/vscode-original.svg`,
+  "Premiere":    `${D}/premierepro/premierepro-original.svg`,
+  "After Fx":    `${D}/aftereffects/aftereffects-original.svg`,
+  "Photoshop":   `${D}/photoshop/photoshop-original.svg`,
+};
+
+// Text-badge fallback for techs without a devicon entry
+const LOGO_FALLBACK: Record<string, { text: string; bg: string; fg: string }> = {
+  "GSAP":        { text: "GSAP", bg: "#0e100f",  fg: "#88CE02" },
+  "SQL":         { text: "SQL",  bg: "#CC2927",   fg: "#ffffff" },
+  "AI / ML":     { text: "AI",   bg: "#FF6B3518", fg: "#FF6B35" },
+  "Mach. Learn": { text: "ML",   bg: "#FF8C4218", fg: "#FF8C42" },
+};
+
+function TechLogo({
+  name,
+  size = 28,
+  darkBg = false,
+}: {
+  name: string;
+  size?: number;
+  darkBg?: boolean;
+}) {
+  const url = LOGO_CDN[name];
+  const fb  = LOGO_FALLBACK[name];
+
+  if (url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt={name}
+        width={size}
+        height={size}
+        style={{
+          width: size,
+          height: size,
+          objectFit: "contain",
+          // Three.js & Express icons are black — invert on dark backgrounds
+          filter:
+            (name === "Three.js" || name === "Express") && darkBg
+              ? "invert(1)"
+              : undefined,
+        }}
+      />
+    );
+  }
+
+  if (fb) {
+    return (
+      <div
+        style={{
+          width: size,
+          height: size,
+          background: fb.bg,
+          borderRadius: 5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <span
+          style={{
+            fontSize: size * 0.3,
+            fontWeight: 800,
+            color: fb.fg,
+            fontFamily: "monospace",
+            letterSpacing: "-0.04em",
+          }}
+        >
+          {fb.text}
+        </span>
+      </div>
+    );
+  }
+
+  // Generic fallback
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        background: "#e5e5e5",
+        borderRadius: 4,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <span style={{ fontSize: 10, color: "#888" }}>{name.slice(0, 2)}</span>
+    </div>
+  );
+}
+
+// ─── Element Card ─────────────────────────────────────────────────────────────
 
 interface ElementCardProps {
   el: TechElement;
@@ -141,114 +247,181 @@ interface ElementCardProps {
   onHover: (el: TechElement | null) => void;
   onClick: (el: TechElement) => void;
   index: number;
-  /** Compact size for mobile/tablet simple grid */
   compact?: boolean;
 }
 
-function ElementCard({ el, dimmed, selected, onHover, onClick, index, compact = false }: ElementCardProps) {
-  const bg = CATEGORY_TINT[el.category];
-  const size = compact ? "w-[64px] h-[64px]" : "w-[78px] h-[78px]";
-  const symbolSize = compact ? "text-[18px]" : "text-[22px]";
-  const nameSize = compact ? "text-[7px]" : "text-[8px]";
+function ElementCard({
+  el,
+  dimmed,
+  selected,
+  onHover,
+  onClick,
+  index,
+  compact = false,
+}: ElementCardProps) {
+  const bg       = CATEGORY_TINT[el.category];
+  const cardW    = compact ? 66 : 82;
+  const cardH    = compact ? 70 : 88;
+  const logoSize = compact ? 22 : 28;
 
   return (
     <motion.button
       layout
       initial={{ opacity: 0, scale: 0.7 }}
       animate={{
-        opacity: dimmed ? 0.18 : 1,
+        opacity: dimmed ? 0.15 : 1,
         scale: 1,
         transition: { duration: 0.25, delay: index * 0.018 },
       }}
-      whileHover={dimmed ? {} : { scale: 1.08, zIndex: 10 }}
-      whileTap={dimmed ? {} : { scale: 0.97 }}
+      whileHover={dimmed ? {} : { scale: 1.1, zIndex: 10 }}
+      whileTap={dimmed ? {} : { scale: 0.96 }}
       onClick={() => onClick(el)}
       onMouseEnter={() => !dimmed && onHover(el)}
       onMouseLeave={() => onHover(null)}
-      style={{ backgroundColor: bg }}
+      style={{ backgroundColor: bg, width: cardW, height: cardH }}
       className={[
-        "relative flex flex-col items-start justify-between flex-shrink-0",
-        size,
-        "rounded-sm p-[6px] cursor-pointer",
-        "text-left transition-shadow duration-200",
+        "relative flex flex-col items-center flex-shrink-0",
+        "rounded-sm pt-[5px] pb-[4px] px-[4px] cursor-pointer gap-[2px]",
+        "transition-shadow duration-200",
         selected
           ? "ring-2 ring-[#1C1C1C] shadow-[0_6px_20px_rgba(0,0,0,0.18)]"
           : "ring-1 ring-[#D0CFBF] hover:ring-2 hover:ring-[#1C1C1C] hover:shadow-[0_6px_20px_rgba(0,0,0,0.14)]",
       ].join(" ")}
     >
-      {/* Atomic number */}
-      <span className="text-[9px] font-mono text-[#555] leading-none">
-        {el.number}
+      {/* Atomic number + category colour dot */}
+      <div className="w-full flex items-center justify-between">
+        <span className="text-[8px] font-mono text-[#777] leading-none">
+          {el.number}
+        </span>
+        <span
+          className="w-[5px] h-[5px] rounded-full"
+          style={{ backgroundColor: el.color === "#000000" ? "#555" : el.color }}
+        />
+      </div>
+
+      {/* Logo */}
+      <span className="flex items-center justify-center flex-1">
+        <TechLogo name={el.name} size={logoSize} />
       </span>
 
-      {/* Symbol */}
+      {/* Full name — shown at bottom, wraps to 2 lines if needed */}
       <span
-        className={`w-full text-center ${symbolSize} font-bold leading-none`}
-        style={{ color: el.color === "#000000" ? "#1C1C1C" : el.color }}
+        className="w-full text-center font-semibold text-[#333] leading-tight"
+        style={{
+          fontSize: compact ? "5.5px" : "7px",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+        }}
       >
-        {el.symbol}
-      </span>
-
-      {/* Name */}
-      <span className={`w-full text-center ${nameSize} text-[#444] leading-tight truncate`}>
         {el.name}
       </span>
-
-      {/* Category dot */}
-      <span
-        className="absolute top-[6px] right-[6px] w-[5px] h-[5px] rounded-full"
-        style={{ backgroundColor: el.color === "#000000" ? "#555" : el.color }}
-      />
     </motion.button>
   );
 }
 
-// ─── Detail Panel ─────────────────────────────────────────────────────────────
+// ─── Floating hover tooltip (smart-positioned) ───────────────────────────────
 
-interface DetailPanelProps {
+function FloatingTooltip({
+  el,
+  mouseY,
+  containerH,
+}: {
   el: TechElement | null;
-  /** When true, panel slides in from below (mobile/tablet) instead of from right */
-  slideFromBottom?: boolean;
+  mouseY: number;
+  containerH: number;
+}) {
+  const showAbove = mouseY > containerH * 0.45;
+
+  return (
+    <AnimatePresence mode="wait">
+      {el && (
+        <motion.div
+          key={el.name}
+          initial={{ opacity: 0, y: showAbove ? 10 : -10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: showAbove ? 10 : -10, scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 340, damping: 28 }}
+          className="flex flex-col gap-4 p-5 rounded-xl bg-white border border-[#E0DFD0] shadow-[0_8px_32px_rgba(0,0,0,0.12)]"
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-[52px] h-[52px] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
+              style={{
+                backgroundColor:
+                  el.color === "#000000" ? "#1C1C1C20" : el.color + "22",
+                border: `1.5px solid ${el.color === "#000000" ? "#1C1C1C" : el.color}44`,
+              }}
+            >
+              <TechLogo name={el.name} size={32} darkBg={el.color === "#000000"} />
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-[#888] font-mono">
+                {el.category}
+              </p>
+              <h3 className="text-lg font-bold text-[#1C1C1C] leading-tight">
+                {el.name}
+              </h3>
+              <p className="text-[11px] text-[#AAA] font-mono">
+                No. {String(el.number).padStart(2, "0")}
+              </p>
+            </div>
+          </div>
+
+          <div className="h-px bg-[#E8E7D8]" />
+
+          <p className="text-xs text-[#555] leading-relaxed">
+            {ELEMENT_DESCRIPTIONS[el.name] ?? "A powerful tool in my developer toolkit."}
+          </p>
+
+          <div
+            className="text-[10px] font-mono px-2.5 py-1 rounded-full self-start"
+            style={{
+              backgroundColor: CATEGORY_TINT[el.category],
+              color: "#555",
+              border: "1px solid #D8D7C8",
+            }}
+          >
+            Family: {el.category}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
 
-function DetailPanel({ el, slideFromBottom = false }: DetailPanelProps) {
-  const enterAnim = slideFromBottom
-    ? { opacity: 0, y: 24 }
-    : { opacity: 0, x: 40 };
-  const exitAnim = slideFromBottom
-    ? { opacity: 0, y: 24 }
-    : { opacity: 0, x: 40 };
+// ─── Sidebar detail panel (click-selected) ───────────────────────────────────
 
+function DetailPanel({ el }: { el: TechElement | null }) {
   return (
     <AnimatePresence mode="wait">
       {el ? (
         <motion.div
           key={el.name}
-          initial={enterAnim}
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          exit={exitAnim}
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 30 }}
           transition={{ type: "spring", stiffness: 300, damping: 28 }}
           className="flex flex-col gap-5 p-6 rounded-xl bg-white border border-[#E0DFD0] shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
           style={{ minHeight: 200 }}
         >
-          {/* Big symbol circle */}
           <div className="flex items-center gap-4">
             <div
-              className="w-[70px] h-[70px] rounded-full flex items-center justify-center flex-shrink-0 shadow-md"
-              style={{ backgroundColor: el.color === "#000000" ? "#1C1C1C" : el.color + "22", border: `2px solid ${el.color === "#000000" ? "#1C1C1C" : el.color}` }}
+              className="w-[64px] h-[64px] rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
+              style={{
+                backgroundColor:
+                  el.color === "#000000" ? "#1C1C1C18" : el.color + "18",
+                border: `2px solid ${el.color === "#000000" ? "#1C1C1C" : el.color}50`,
+              }}
             >
-              <span
-                className="text-[22px] font-extrabold"
-                style={{ color: el.color === "#000000" ? "#1C1C1C" : el.color }}
-              >
-                {el.symbol}
-              </span>
+              <TechLogo name={el.name} size={38} darkBg={el.color === "#000000"} />
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-widest text-[#888] font-mono">
                 {el.category}
               </p>
-              <h3 className="text-xl md:text-2xl font-bold text-[#1C1C1C] leading-tight">
+              <h3 className="text-xl font-bold text-[#1C1C1C] leading-tight">
                 {el.name}
               </h3>
               <p className="text-[12px] text-[#888] font-mono">
@@ -257,15 +430,12 @@ function DetailPanel({ el, slideFromBottom = false }: DetailPanelProps) {
             </div>
           </div>
 
-          {/* Divider */}
           <div className="h-px bg-[#E8E7D8]" />
 
-          {/* Description */}
           <p className="text-sm text-[#444] leading-relaxed">
             {ELEMENT_DESCRIPTIONS[el.name] ?? "A powerful tool in my developer toolkit."}
           </p>
 
-          {/* Family label */}
           <div
             className="mt-auto text-[11px] font-mono px-3 py-1.5 rounded-full self-start"
             style={{
@@ -302,17 +472,19 @@ function DetailPanel({ el, slideFromBottom = false }: DetailPanelProps) {
 
 export default function SkillsSection() {
   const [activeFilter, setActiveFilter] = useState<Category | null>(null);
-  const [hoveredEl, setHoveredEl] = useState<TechElement | null>(null);
-  const [selectedEl, setSelectedEl] = useState<TechElement | null>(null);
+  const [hoveredEl, setHoveredEl]       = useState<TechElement | null>(null);
+  const [selectedEl, setSelectedEl]     = useState<TechElement | null>(null);
+  const [mouseY, setMouseY]             = useState(0);
+  const [containerH, setContainerH]     = useState(400);
 
   const sectionRef = useRef<HTMLElement>(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
+  const gridRef    = useRef<HTMLDivElement>(null);
+  const isInView   = useInView(sectionRef, { once: true, amount: 0.15 });
 
   const panelEl = hoveredEl ?? selectedEl;
 
-  const handleElementClick = (el: TechElement) => {
+  const handleElementClick = (el: TechElement) =>
     setSelectedEl((prev) => (prev?.name === el.name ? null : el));
-  };
 
   const handleFilterClick = (cat: Category) => {
     setActiveFilter((prev) => (prev === cat ? null : cat));
@@ -323,15 +495,23 @@ export default function SkillsSection() {
   const isDimmed = (el: TechElement) =>
     activeFilter !== null && el.category !== activeFilter;
 
-  // Build element lookup by number
   const elByNumber = new Map<number, TechElement>(
     TECH_ELEMENTS.map((e) => [e.number, e])
   );
 
-  // Filtered list for the simple grid (mobile / tablet)
   const filteredElements = activeFilter
     ? TECH_ELEMENTS.filter((e) => e.category === activeFilter)
     : TECH_ELEMENTS;
+
+  const handleGridMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!gridRef.current) return;
+      const rect = gridRef.current.getBoundingClientRect();
+      setMouseY(e.clientY - rect.top);
+      setContainerH(rect.height);
+    },
+    []
+  );
 
   return (
     <section
@@ -340,12 +520,13 @@ export default function SkillsSection() {
       style={{ backgroundColor: "#F5F4E8" }}
       className="w-full overflow-hidden py-16 md:py-24"
     >
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12">
-        {/* ── Header ─────────────────────────────────────────────────────── */}
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-12">
+
+        {/* ── Header ── */}
         <motion.div
           initial={{ opacity: 0, y: 36 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
           className="mb-10 md:mb-12"
         >
           <p className="text-xs font-mono tracking-[0.2em] text-[#888] uppercase mb-3">
@@ -357,15 +538,15 @@ export default function SkillsSection() {
             of my stack
           </h2>
           <p className="text-xs sm:text-sm text-[#666] font-mono">
-            26+ elements in 08 families.&nbsp; Hover or click to highlight.&nbsp; Click a family to filter.
+            26 elements in 08 families.&nbsp; Hover or click to highlight.&nbsp; Click a family to filter.
           </p>
         </motion.div>
 
-        {/* ── Filter Buttons ──────────────────────────────────────────────── */}
+        {/* ── Filter Buttons ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] as const }}
           className="flex flex-wrap gap-2 mb-8 md:mb-10"
         >
           {CATEGORIES.map((cat) => (
@@ -373,11 +554,8 @@ export default function SkillsSection() {
               key={cat}
               onClick={() => handleFilterClick(cat)}
               className="relative px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium border border-[#C8C7B8] overflow-hidden transition-colors duration-200"
-              style={{
-                color: activeFilter === cat ? "#F5F4E8" : "#333",
-              }}
+              style={{ color: activeFilter === cat ? "#F5F4E8" : "#333" }}
             >
-              {/* Animated fill */}
               {activeFilter === cat && (
                 <motion.span
                   layoutId="filter-bg"
@@ -389,7 +567,6 @@ export default function SkillsSection() {
               <span className="relative z-10">{cat}</span>
             </button>
           ))}
-
           {activeFilter && (
             <button
               onClick={() => setActiveFilter(null)}
@@ -400,37 +577,40 @@ export default function SkillsSection() {
           )}
         </motion.div>
 
-        {/* ── Main Layout: Table + Panel ──────────────────────────────────── */}
+        {/* ── Main Layout: Grid + Panel ── */}
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-start">
-          {/* ── Periodic Table Grid ── */}
+
+          {/* ── Grid column ── */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] as const }}
             className="flex-1 w-full"
           >
             {/* Legend */}
-            <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-5">
               {CATEGORIES.map((cat) => (
-                <div key={cat} className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-[#666] font-mono">
+                <div
+                  key={cat}
+                  className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-[#666] font-mono"
+                >
                   <span
                     className="w-3 h-3 rounded-sm inline-block flex-shrink-0"
-                    style={{ backgroundColor: CATEGORY_TINT[cat], border: "1px solid #C8C7B8" }}
+                    style={{
+                      backgroundColor: CATEGORY_TINT[cat],
+                      border: "1px solid #C8C7B8",
+                    }}
                   />
                   {cat}
                 </div>
               ))}
             </div>
 
-            {/* ── Mobile / Tablet: simple responsive grid (hidden on lg+) ── */}
+            {/* Mobile grid (< lg): simple responsive grid */}
             <div className="lg:hidden">
               <motion.div
                 layout
-                className={[
-                  "grid gap-2",
-                  // 4 cols on mobile, 5 on sm/md tablet
-                  "grid-cols-4 sm:grid-cols-5",
-                ].join(" ")}
+                className="grid gap-2 grid-cols-4 sm:grid-cols-5"
               >
                 <AnimatePresence>
                   {filteredElements.map((el, idx) => (
@@ -447,10 +627,18 @@ export default function SkillsSection() {
                   ))}
                 </AnimatePresence>
               </motion.div>
+              {/* Mobile detail panel */}
+              <div className="mt-6">
+                <DetailPanel el={panelEl} />
+              </div>
             </div>
 
-            {/* ── Desktop: periodic-table layout (hidden below lg) ── */}
-            <div className="hidden lg:block overflow-x-auto pb-2">
+            {/* Desktop PT grid (≥ lg): smart tooltip on hover */}
+            <div
+              ref={gridRef}
+              className="hidden lg:block relative"
+              onMouseMove={handleGridMouseMove}
+            >
               <div className="flex flex-col gap-1.5 w-fit">
                 {PT_LAYOUT.map((row, rowIdx) => (
                   <div key={rowIdx} className="flex gap-1.5">
@@ -459,7 +647,8 @@ export default function SkillsSection() {
                         return (
                           <div
                             key={`gap-${rowIdx}-${colIdx}`}
-                            className="w-[78px] h-[78px] flex-shrink-0"
+                            style={{ width: 82, height: 88 }}
+                            className="flex-shrink-0"
                           />
                         );
                       }
@@ -480,49 +669,58 @@ export default function SkillsSection() {
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* Category description bar */}
-            <AnimatePresence mode="wait">
-              {activeFilter && (
-                <motion.div
-                  key={activeFilter}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-5 sm:mt-6 overflow-hidden"
-                >
-                  <div
-                    className="rounded-lg px-4 sm:px-5 py-3 text-xs sm:text-sm text-[#444] font-mono border border-[#D8D7C8]"
-                    style={{ backgroundColor: CATEGORY_TINT[activeFilter] }}
+              {/* Category description bar */}
+              <AnimatePresence mode="wait">
+                {activeFilter && (
+                  <motion.div
+                    key={activeFilter}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-4 overflow-hidden"
                   >
-                    <span className="font-bold text-[#1C1C1C]">{activeFilter}: </span>
-                    {CATEGORY_DESCRIPTIONS[activeFilter]}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    <div
+                      className="rounded-lg px-5 py-3 text-xs sm:text-sm text-[#444] font-mono border border-[#D8D7C8]"
+                      style={{ backgroundColor: CATEGORY_TINT[activeFilter] }}
+                    >
+                      <span className="font-bold text-[#1C1C1C]">
+                        {activeFilter}:{" "}
+                      </span>
+                      {CATEGORY_DESCRIPTIONS[activeFilter]}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
 
-          {/* ── Detail Panel ── */}
+          {/* ── Detail panel (desktop sidebar) ── */}
           <motion.div
-            initial={{ opacity: 0, x: 0, y: 24 }}
-            animate={isInView ? { opacity: 1, x: 0, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full lg:w-[260px] lg:flex-shrink-0"
+            initial={{ opacity: 0, y: 24 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+            className="hidden lg:block w-[270px] flex-shrink-0"
           >
-            {/* On mobile/tablet the panel appears below (sticky is lg-only) */}
-            <div className="lg:sticky lg:top-24">
-              <DetailPanel el={panelEl} slideFromBottom />
+            <div className="sticky top-24">
+              {hoveredEl ? (
+                <FloatingTooltip
+                  el={hoveredEl}
+                  mouseY={mouseY}
+                  containerH={containerH}
+                />
+              ) : (
+                <DetailPanel el={selectedEl} />
+              )}
             </div>
           </motion.div>
         </div>
 
-        {/* ── Stats row ──────────────────────────────────────────────────── */}
+        {/* ── Stats row ── */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.6, delay: 0.55, ease: [0.22, 1, 0.36, 1] as const }}
           className="mt-10 md:mt-14 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4"
         >
           {CATEGORIES.map((cat) => {
@@ -534,7 +732,9 @@ export default function SkillsSection() {
                 style={{ backgroundColor: CATEGORY_TINT[cat] }}
                 onClick={() => handleFilterClick(cat)}
               >
-                <span className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">{count}</span>
+                <span className="text-xl sm:text-2xl font-bold text-[#1C1C1C]">
+                  {count}
+                </span>
                 <span className="text-[9px] sm:text-[10px] font-mono text-[#666] uppercase tracking-wider text-center px-1">
                   {cat}
                 </span>

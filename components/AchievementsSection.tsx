@@ -156,12 +156,20 @@ function AnimatedStat({
   );
 
   if (type === "text") {
+    // Pick a font size that won't overflow — short strings get big, long ones get smaller
+    const fontSize =
+      stat.length <= 4
+        ? "text-3xl md:text-4xl lg:text-5xl"
+        : stat.length <= 6
+        ? "text-2xl md:text-3xl lg:text-4xl"
+        : "text-xl md:text-2xl lg:text-3xl";
+
     return (
       <motion.span
         initial={{ opacity: 0, y: 6 }}
         animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight leading-none"
+        className={`${fontSize} font-black tracking-tight leading-none break-words w-full block`}
         style={{ color }}
       >
         {stat}

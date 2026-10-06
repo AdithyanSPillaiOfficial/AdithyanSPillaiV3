@@ -20,7 +20,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Adithyan S Pillai | Software Engineer & Full-Stack Developer",
   description:
-    "Final-year B.Tech Computer Science student at CCET, Alappuzha. Software Engineer skilled in React, Node.js, Flutter, Python, and AI/ML.",
+    "B.Tech Computer Science graduate (CGPA: 6.91) from CCET, Alappuzha. Software Engineer skilled in React, Node.js, Flutter, Python, and AI/ML.",
   keywords: ["Software Engineer", "Full-Stack Developer", "React", "Node.js", "Flutter", "Python", "AI", "Kerala"],
   authors: [{ name: "Adithyan S Pillai" }],
   openGraph: {

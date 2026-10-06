@@ -1,12 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import {
   motion,
   useInView,
-  useScroll,
-  useTransform,
-  useDragControls,
+  useMotionValue,
+  useSpring,
+  animate,
 } from "framer-motion";
 import {
   GraduationCap,
@@ -109,9 +109,14 @@ const ENTRIES: TimelineEntry[] = [
   },
 ];
 
+// Card width + gap used to calculate total track width
+const CARD_W   = 280;
+const CARD_GAP = 56;
+
+// Year labels that travel with the track (spaced evenly)
 const YEAR_LABELS = ["2019", "2020", "2021", "2022", "2023", "2024", "2025"];
 
-// ─── Type theme helper ─────────────────────────────────────────────────────────
+// ─── Type theme ───────────────────────────────────────────────────────────────
 
 const TYPE_THEME: Record<
   EntryType,
@@ -154,7 +159,7 @@ const TYPE_THEME: Record<
   },
 };
 
-// ─── Badge ─────────────────────────────────────────────────────────────────────
+// ─── Badge ────────────────────────────────────────────────────────────────────
 
 function TypeBadge({ type }: { type: EntryType }) {
   const theme = TYPE_THEME[type];
@@ -167,100 +172,77 @@ function TypeBadge({ type }: { type: EntryType }) {
   );
 }
 
-// ─── Card variants (desktop) ───────────────────────────────────────────────────
+// ─── Desktop card ─────────────────────────────────────────────────────────────
 
-const cardVariants = {
-  hidden: (above: boolean) => ({
-    opacity: 0,
-    y: above ? -40 : 40,
-  }),
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
-  },
-};
-
-// ─── Desktop card inner content ────────────────────────────────────────────────
-
-function CardContent({ entry, above }: { entry: TimelineEntry; above: boolean }) {
+function CardContent({
+  entry,
+  above,
+}: {
+  entry: TimelineEntry;
+  above: boolean;
+}) {
   const theme = TYPE_THEME[entry.type];
-  const Icon = entry.icon;
+  const Icon  = entry.icon;
 
   return (
     <motion.div
-      custom={above}
-      variants={cardVariants}
-      className="flex flex-col gap-3 w-64 rounded-xl bg-white border border-gray-100 shadow-md p-5"
+      className="flex flex-col gap-3 rounded-xl bg-white border border-gray-100 shadow-md p-5"
+      style={{ width: CARD_W }}
+      initial={{ opacity: 0, y: above ? -30 : 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] as const }}
       whileHover={{
         y: above ? -4 : 4,
         boxShadow: "0 12px 40px rgba(0,0,0,0.10)",
       }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
-      {/* Icon circle */}
       <div
         className={`flex items-center justify-center w-10 h-10 rounded-full ${theme.iconBg} ${theme.iconText}`}
       >
         <Icon size={20} strokeWidth={1.8} />
       </div>
 
-      {/* Meta */}
       <div className="flex items-center gap-2 flex-wrap">
         <TypeBadge type={entry.type} />
         <span className="text-xs text-gray-400 font-medium">{entry.year}</span>
       </div>
 
-      {/* Title */}
       <h3 className="text-sm font-bold text-gray-900 leading-snug">
         {entry.title}
       </h3>
-
-      {/* Org */}
       <p className="text-xs text-gray-500 leading-snug">{entry.org}</p>
-
-      {/* Detail */}
       <p className="text-xs text-gray-400 leading-relaxed">{entry.detail}</p>
     </motion.div>
   );
 }
 
-// ─── Mobile vertical card ──────────────────────────────────────────────────────
-
-const mobileCardVariants = {
-  hidden: { opacity: 0, x: 40 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
-  },
-};
+// ─── Mobile card ──────────────────────────────────────────────────────────────
 
 function MobileCard({ entry }: { entry: TimelineEntry }) {
-  const theme = TYPE_THEME[entry.type];
-  const Icon = entry.icon;
-  const ref = useRef<HTMLDivElement>(null);
+  const theme  = TYPE_THEME[entry.type];
+  const Icon   = entry.icon;
+  const ref    = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
 
   return (
     <div ref={ref} className="relative flex items-start gap-4 pb-8 last:pb-0">
-      {/* Dot on the vertical line */}
-      <div className="relative flex-shrink-0 flex flex-col items-center" style={{ width: 20 }}>
+      <div
+        className="relative flex-shrink-0 flex flex-col items-center"
+        style={{ width: 20 }}
+      >
         <div
           className={`w-4 h-4 rounded-full border-2 bg-white ${theme.dotBorder} z-10 mt-1`}
           style={{ boxShadow: "0 0 0 3px #F5F4E8" }}
         />
       </div>
 
-      {/* Card */}
       <motion.div
-        variants={mobileCardVariants}
-        initial="hidden"
-        animate={inView ? "visible" : "hidden"}
+        initial={{ opacity: 0, x: 40 }}
+        animate={inView ? { opacity: 1, x: 0 } : {}}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
         className="flex-1 flex flex-col gap-2 rounded-xl bg-white border border-gray-100 shadow-md p-4"
         whileHover={{ boxShadow: "0 12px 40px rgba(0,0,0,0.10)" }}
       >
-        {/* Icon + meta row */}
         <div className="flex items-center gap-3">
           <div
             className={`flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 ${theme.iconBg} ${theme.iconText}`}
@@ -272,7 +254,6 @@ function MobileCard({ entry }: { entry: TimelineEntry }) {
             <span className="text-xs text-gray-400 font-medium">{entry.year}</span>
           </div>
         </div>
-
         <h3 className="text-sm font-bold text-gray-900 leading-snug">
           {entry.title}
         </h3>
@@ -283,37 +264,271 @@ function MobileCard({ entry }: { entry: TimelineEntry }) {
   );
 }
 
-// ─── Mobile vertical timeline ──────────────────────────────────────────────────
+// ─── Mobile timeline ──────────────────────────────────────────────────────────
 
-function MobileTimeline({ isInView }: { isInView: boolean }) {
+function MobileTimeline() {
   return (
     <div className="max-w-7xl mx-auto px-6">
-      {/* Left border line + cards */}
       <div className="relative border-l-2 border-gray-200 pl-2">
-        {ENTRIES.map((entry, index) => (
-          <MobileCard key={index} entry={entry} />
+        {ENTRIES.map((entry, i) => (
+          <MobileCard key={i} entry={entry} />
         ))}
       </div>
     </div>
   );
 }
 
-// ─── Main Section ──────────────────────────────────────────────────────────────
+// ─── Desktop horizontal timeline with scroll-hijack ───────────────────────────
+
+function DesktopTimeline({ isInView }: { isInView: boolean }) {
+  // Total scrollable distance for the track
+  // (n cards × width + (n-1) gaps + 2 × 8vw padding estimated as 160px each side)
+  const PADDING     = 160; // px approximation for 8vw at 1200px viewport
+  const TRACK_W     = ENTRIES.length * (CARD_W + CARD_GAP) + PADDING * 2;
+  const MAX_SCROLL  = TRACK_W - (typeof window !== "undefined" ? window.innerWidth : 1200);
+
+  const sectionRef   = useRef<HTMLDivElement>(null);
+  const trackRef     = useRef<HTMLDivElement>(null);
+  const yearTrackRef = useRef<HTMLDivElement>(null);
+
+  // Spring-smoothed x value for the track
+  const rawX    = useMotionValue(0);
+  const springX = useSpring(rawX, { stiffness: 100, damping: 22, mass: 0.8 });
+
+  // Whether wheel scroll is currently "locked" to horizontal
+  const locked    = useRef(false);
+  const animating = useRef(false);
+
+  // Clamp helper
+  const clamp = (v: number, min: number, max: number) =>
+    Math.max(min, Math.min(max, v));
+
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      if (!sectionRef.current) return;
+
+      const rect      = sectionRef.current.getBoundingClientRect();
+      const inSection =
+        rect.top <= window.innerHeight * 0.5 &&
+        rect.bottom >= window.innerHeight * 0.5;
+
+      if (!inSection) return;
+
+      const current = rawX.get();
+      const atStart = current >= 0;
+      const atEnd   = current <= -MAX_SCROLL;
+
+      // Allow normal vertical scroll when already at extremes and scrolling outward
+      if (atStart && e.deltaY < 0) return;
+      if (atEnd  && e.deltaY > 0) return;
+
+      // Otherwise hijack
+      e.preventDefault();
+      e.stopPropagation();
+
+      const delta = e.deltaY * 1.8;
+      const next  = clamp(current - delta, -MAX_SCROLL, 0);
+      rawX.set(next);
+    },
+    [rawX, MAX_SCROLL, clamp]
+  );
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, [handleWheel]);
+
+  // Drag support (touch / mouse)
+  const dragStartX = useRef(0);
+  const dragStartRaw = useRef(0);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    dragStartX.current    = e.clientX;
+    dragStartRaw.current  = rawX.get();
+    trackRef.current?.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!trackRef.current?.hasPointerCapture(e.pointerId)) return;
+    const delta = e.clientX - dragStartX.current;
+    rawX.set(clamp(dragStartRaw.current + delta, -MAX_SCROLL, 0));
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    trackRef.current?.releasePointerCapture(e.pointerId);
+  };
+
+  return (
+    <div
+      ref={sectionRef}
+      className="relative select-none"
+      style={{ height: 520 }}
+    >
+      {/* ── Year labels — travel with the track ── */}
+      <motion.div
+        aria-hidden
+        style={{ x: springX, zIndex: 0 }}
+        className="pointer-events-none absolute inset-0 flex items-center overflow-visible select-none"
+      >
+        <div
+          className="flex items-center"
+          style={{ paddingLeft: PADDING, gap: "8vw" }}
+        >
+          {YEAR_LABELS.map((y) => (
+            <span
+              key={y}
+              className="text-gray-900 font-black shrink-0 leading-none"
+              style={{
+                fontSize: "clamp(72px, 12vw, 150px)",
+                opacity: 0.06,
+                letterSpacing: "-0.04em",
+              }}
+            >
+              {y}
+            </span>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* ── Draggable card track ── */}
+      <motion.div
+        ref={trackRef}
+        style={{ x: springX, cursor: "grab", zIndex: 1 }}
+        whileTap={{ cursor: "grabbing" }}
+        className="absolute inset-0 flex items-center"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+      >
+        <div
+          className="relative flex items-center"
+          style={{
+            width: "max-content",
+            paddingLeft: PADDING,
+            paddingRight: PADDING,
+            height: "100%",
+          }}
+        >
+          {/* Horizontal centre line */}
+          <div
+            className="absolute left-0 right-0 bg-gray-300"
+            style={{
+              top: "50%",
+              height: 2,
+              transform: "translateY(-50%)",
+              zIndex: 0,
+              width: TRACK_W,
+            }}
+          />
+
+          {/* Cards */}
+          {ENTRIES.map((entry, index) => {
+            const above = entry.position === "above";
+            const theme = TYPE_THEME[entry.type];
+
+            return (
+              <div
+                key={index}
+                className="relative flex flex-col items-center"
+                style={{
+                  width: CARD_W,
+                  height: "100%",
+                  flexShrink: 0,
+                  marginRight: index < ENTRIES.length - 1 ? CARD_GAP : 0,
+                }}
+              >
+                {above ? (
+                  <>
+                    {/* Top half: card + stem */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "calc(50% + 1px)",
+                        left: 0,
+                        right: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      {isInView && <CardContent entry={entry} above />}
+                      <div className={`w-px ${theme.stem}`} style={{ height: 48 }} />
+                    </div>
+
+                    {/* Dot */}
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 bg-white ${theme.dot}`}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 2,
+                      }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    {/* Dot */}
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 bg-white ${theme.dot}`}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 2,
+                      }}
+                    />
+
+                    {/* Bottom half: stem + card */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "calc(50% + 1px)",
+                        left: 0,
+                        right: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div className={`w-px ${theme.stem}`} style={{ height: 48 }} />
+                      {isInView && <CardContent entry={entry} above={false} />}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* Edge fade hints */}
+      <div
+        className="pointer-events-none absolute left-0 inset-y-0 w-24 z-10"
+        style={{
+          background: "linear-gradient(to right, #F5F4E8 0%, transparent 100%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute right-0 inset-y-0 w-24 z-10"
+        style={{
+          background: "linear-gradient(to left, #F5F4E8 0%, transparent 100%)",
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Main Section ─────────────────────────────────────────────────────────────
 
 export default function ExperienceSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const dragControls = useDragControls();
-
-  // Section entry animation
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
-
-  // Parallax: as user scrolls through section, shift timeline left
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-  const trackX = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
+  const isInView   = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
     <section
@@ -342,177 +557,22 @@ export default function ExperienceSection() {
         </motion.h2>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* MOBILE: vertical stacked timeline (<768px)                           */}
-      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* Mobile */}
       <div className="block md:hidden">
-        <MobileTimeline isInView={isInView} />
+        <MobileTimeline />
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* DESKTOP: horizontal draggable timeline (≥768px) — unchanged          */}
-      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* Desktop */}
       <div className="hidden md:block">
-        {/* ── Timeline Wrapper ── */}
-        <div className="relative" style={{ height: 520 }}>
-          {/* Giant muted year labels (absolute, behind everything) */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 flex items-center overflow-hidden select-none"
-            style={{ zIndex: 0 }}
-          >
-            {YEAR_LABELS.map((y, i) => (
-              <span
-                key={y}
-                className="text-gray-900 font-black shrink-0"
-                style={{
-                  fontSize: "clamp(80px, 14vw, 160px)",
-                  opacity: 0.07,
-                  letterSpacing: "-0.04em",
-                  marginLeft: i === 0 ? "4vw" : "6vw",
-                  lineHeight: 1,
-                }}
-              >
-                {y}
-              </span>
-            ))}
-          </div>
+        <DesktopTimeline isInView={isInView} />
 
-          {/* Draggable + parallax track */}
-          <motion.div
-            ref={trackRef}
-            drag="x"
-            dragControls={dragControls}
-            dragConstraints={{ left: -1400, right: 0 }}
-            dragElastic={0.08}
-            style={{ x: trackX, cursor: "grab", zIndex: 1 }}
-            whileDrag={{ cursor: "grabbing" }}
-            className="absolute inset-0 flex items-center"
-          >
-            {/* Inner scroll track */}
-            <motion.div
-              className="relative flex items-center"
-              style={{
-                width: "max-content",
-                paddingLeft: "8vw",
-                paddingRight: "8vw",
-                height: "100%",
-              }}
-              variants={{
-                hidden: {},
-                visible: { transition: { staggerChildren: 0.18 } },
-              }}
-              initial="hidden"
-              animate={isInView ? "visible" : "hidden"}
-            >
-              {/* Horizontal line */}
-              <div
-                className="absolute left-0 right-0 bg-gray-300"
-                style={{ top: "50%", height: 2, transform: "translateY(-50%)", zIndex: 0 }}
-              />
-
-              {/* Cards */}
-              {ENTRIES.map((entry, index) => {
-                const above = entry.position === "above";
-                const theme = TYPE_THEME[entry.type];
-
-                return (
-                  <div
-                    key={index}
-                    className="relative flex flex-col items-center"
-                    style={{
-                      width: 280,
-                      height: "100%",
-                      flexShrink: 0,
-                      marginRight: index < ENTRIES.length - 1 ? 48 : 0,
-                      justifyContent: "center",
-                    }}
-                  >
-                    {above ? (
-                      <>
-                        {/* Top half: card + stem */}
-                        <div
-                          style={{
-                            position: "absolute",
-                            bottom: "calc(50% + 1px)",
-                            left: 0,
-                            right: 0,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "flex-end",
-                          }}
-                        >
-                          <CardContent entry={entry} above={true} />
-                          {/* Stem below card */}
-                          <div
-                            className={`w-px ${theme.stem}`}
-                            style={{ height: 48 }}
-                          />
-                        </div>
-
-                        {/* Dot on line */}
-                        <div
-                          className={`w-4 h-4 rounded-full border-2 bg-white ${theme.dot}`}
-                          style={{
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            zIndex: 2,
-                          }}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        {/* Dot on line */}
-                        <div
-                          className={`w-4 h-4 rounded-full border-2 bg-white ${theme.dot}`}
-                          style={{
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            zIndex: 2,
-                          }}
-                        />
-
-                        {/* Bottom half: stem + card */}
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: "calc(50% + 1px)",
-                            left: 0,
-                            right: 0,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                          }}
-                        >
-                          {/* Stem above card */}
-                          <div
-                            className={`w-px ${theme.stem}`}
-                            style={{ height: 48 }}
-                          />
-                          <CardContent entry={entry} above={false} />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </motion.div>
-          </motion.div>
-        </div>
-
-        {/* Drag hint */}
         <motion.p
           className="text-center text-xs text-gray-400 mt-6 select-none"
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ delay: 1, duration: 0.6 }}
         >
-          ← drag to explore →
+          scroll or drag to explore →
         </motion.p>
       </div>
     </section>

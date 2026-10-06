@@ -23,7 +23,7 @@ const educationEntries = [
     color: "#3178C6",
     Icon: GraduationCap,
     description:
-      "Pursuing B.Tech in Computer Science and Engineering with focus on software development, AI/ML, and web technologies at CCET, Alappuzha.",
+      "Completed B.Tech in Computer Science and Engineering (CGPA: 6.91) with focus on software development, AI/ML, and web technologies at CCET, Alappuzha.",
   },
   {
     id: "hsc",
