@@ -25,9 +25,9 @@ export const viewport: Viewport = {
 };
 
 const SITE_URL = "https://adithyanspillai.in";
-const SITE_TITLE = "Adithyan S Pillai | Software Engineer, Full-Stack & Mobile Developer";
+const SITE_TITLE = "Adithyan S Pillai | Software Engineer, Full-Stack & Backend Developer";
 const SITE_DESC =
-  "Official portfolio of Adithyan S Pillai, a Software Engineer & B.Tech CSE Graduate from CCET, KTU. Specializing in Full-Stack Web (React, Node.js, Next.js, Express), Mobile Development (Flutter, Android), AI/ML (RIAAQE), and Cloud & Tools.";
+  "Official portfolio of Adithyan S Pillai, a Software Engineer & B.Tech CSE Graduate from CCET, KTU. Specializing in Full-Stack & Backend Web Engineering (Node.js, Express, Python, React, Next.js, Databases), AI/ML (RIAAQE), and Cloud & Tools.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -54,22 +54,23 @@ export const metadata: Metadata = {
     // Core Roles
     "Software Engineer",
     "Full-Stack Developer",
-    "Frontend Developer",
     "Backend Developer",
-    "Mobile App Developer",
+    "Frontend Developer",
+    "Backend Engineer",
+    "Node.js Developer",
+    "Python Developer",
     "Web Developer Kerala",
     "Software Developer India",
     // Primary Technologies & Stacks
-    "React.js Developer",
-    "Node.js Developer",
-    "Next.js Portfolio",
-    "TypeScript Developer",
-    "Python Developer",
-    "Flutter Developer",
-    "Android App Developer",
     "Express.js",
     "MongoDB",
     "SQL",
+    "React.js Developer",
+    "Next.js Portfolio",
+    "TypeScript Developer",
+    "REST APIs",
+    "Flutter Developer",
+    "Android App Developer",
     "Tailwind CSS",
     "Three.js Developer",
     "GSAP Animations",
@@ -99,9 +100,9 @@ export const metadata: Metadata = {
     canonical: SITE_URL,
   },
   openGraph: {
-    title: "Adithyan S Pillai — Software Engineer & Full-Stack Developer",
+    title: "Adithyan S Pillai — Software Engineer, Full-Stack & Backend Developer",
     description:
-      "Explore the projects, technical skills, and experience of Adithyan S Pillai. Building scalable web applications, mobile experiences, and AI solutions.",
+      "Explore the projects, technical skills, and experience of Adithyan S Pillai. Building scalable web architectures, backend systems, and AI solutions.",
     url: SITE_URL,
     siteName: "Adithyan S Pillai Portfolio",
     locale: "en_US",
@@ -117,9 +118,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Adithyan S Pillai — Software Engineer",
+    title: "Adithyan S Pillai — Software Engineer & Backend Developer",
     description:
-      "Software Engineer & Full-Stack Developer. React, Node.js, Flutter, Python & AI/ML.",
+      "Software Engineer, Full-Stack & Backend Developer. Node.js, Express, Python, React & AI/ML.",
     images: ["/adithyan.jpg"],
     creator: "@adithyanspillai",
   },

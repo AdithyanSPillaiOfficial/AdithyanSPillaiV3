@@ -12,7 +12,7 @@ import {
 import { FileText, ExternalLink, Link2 } from "lucide-react";
 
 // ─── Skill Tags ─────────────────────────────────────────────────────────────
-const SKILLS = ["Full-Stack", "Mobile Dev", "AI/ML", "Open Source"];
+const SKILLS = ["Full-Stack", "Backend Dev", "AI/ML", "Open Source"];
 
 // ─── Action Buttons ──────────────────────────────────────────────────────────
 const ACTIONS = [
@@ -419,8 +419,8 @@ export default function AboutSection() {
             <p className="text-stone-600 text-base sm:text-lg leading-relaxed max-w-md">
               B.Tech Computer Science & Engineering graduate (CGPA: 6.91) from Carmel College of
               Engineering and Technology (CCET), Alappuzha, affiliated with APJ Abdul Kalam
-              Technological University (KTU). Passionate about software development with skills in
-              full-stack web development, mobile applications, and AI/ML technologies.
+              Technological University (KTU). Passionate about software development with core expertise in
+              full-stack web development, backend engineering & REST APIs, and AI/ML technologies.
             </p>
 
             <div className="flex flex-wrap gap-2">

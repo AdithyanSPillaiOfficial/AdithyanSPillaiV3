@@ -8,7 +8,7 @@
 
 ## 1. Professional Overview
 - **Full Name**: Adithyan S Pillai
-- **Current Title**: Software Engineer / Full-Stack Developer / Mobile Developer
+- **Current Title**: Software Engineer / Full-Stack & Backend Developer
 - **Degree**: B.Tech in Computer Science and Engineering (Graduated with 6.91 CGPA)
 - **Institution**: Carmel College of Engineering and Technology (CCET), Alappuzha
 - **University**: APJ Abdul Kalam Technological University (KTU), Kerala, India

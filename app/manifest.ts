@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Adithyan S Pillai | Software Engineer",
     short_name: "Adithyan S Pillai",
     description:
-      "Portfolio of Adithyan S Pillai - Software Engineer, Full-Stack Developer, Flutter & AI/ML Enthusiast.",
+      "Portfolio of Adithyan S Pillai - Software Engineer, Full-Stack & Backend Developer, Python, Node.js & AI/ML Enthusiast.",
     start_url: "/",
     display: "standalone",
     background_color: "#F5F4E8",

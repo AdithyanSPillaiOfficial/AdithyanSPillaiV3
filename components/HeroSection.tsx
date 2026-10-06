@@ -234,7 +234,7 @@ export default function HeroSection() {
               transition={{ delay: 0.6, duration: 0.5, ease }}
               className="text-[13px] text-[#666] leading-relaxed"
             >
-              Full-stack • Mobile • AI/ML — building what matters.
+              Full-stack • Backend • AI/ML — building what matters.
             </motion.p>
           </div>
 
@@ -361,7 +361,7 @@ export default function HeroSection() {
             className="text-[13px] text-[#666] leading-relaxed max-w-[260px]"
           >
             B.Tech CSE graduate (CGPA: 6.91) from CCET, Alappuzha.
-            Building scalable web apps, mobile experiences&nbsp;&amp; AI&nbsp;tools.
+            Building scalable web apps, backend architectures&nbsp;&amp; AI&nbsp;tools.
           </motion.p>
 
           <motion.div
