@@ -1,0 +1,89 @@
+# Adithyan S Pillai - Software Engineer & Full-Stack Developer
+
+> Official machine-readable profile and portfolio summary for AI agents, LLMs, search engines, and web scrapers.
+> Canonical URL: https://adithyanspillai.in
+> Last Updated: 2026-10-07
+
+---
+
+## 1. Professional Overview
+- **Full Name**: Adithyan S Pillai
+- **Current Title**: Software Engineer / Full-Stack Developer / Mobile Developer
+- **Degree**: B.Tech in Computer Science and Engineering (Graduated with 6.91 CGPA)
+- **Institution**: Carmel College of Engineering and Technology (CCET), Alappuzha
+- **University**: APJ Abdul Kalam Technological University (KTU), Kerala, India
+- **Location**: Kerala, India
+- **Email**: adithyanspillaiofficial@gmail.com
+- **Phone**: +91 96059 87219
+- **Portfolio Website**: https://adithyanspillai.in
+- **GitHub**: https://github.com/AdithyanSPillaiOfficial
+- **LinkedIn**: https://linkedin.com/in/adithyan-s-pillai
+
+---
+
+## 2. Core Competencies & Technical Skills
+
+### Programming Languages
+- Python, TypeScript, JavaScript, C, C++, PHP, Dart, SQL, HTML5, CSS3
+
+### Frontend & Web Technologies
+- React.js, Next.js, Tailwind CSS, Three.js (WebGL 3D), GSAP (Animations), Framer Motion, Responsive UI/UX
+
+### Backend & API Engineering
+- Node.js, Express.js, RESTful API Design, Microservices, Authentication, Server-Side Rendering (SSR)
+
+### Databases & Storage
+- MongoDB (NoSQL), MySQL / PostgreSQL (Relational SQL), Schema Optimization
+
+### Mobile Application Development
+- Flutter (Cross-platform iOS/Android), Native Android (Java/Kotlin)
+
+### Artificial Intelligence & Machine Learning
+- AI/ML Algorithms, Real-time video/audio analysis, predictive modeling, data mining
+
+### Dev Tools, Cloud & Systems
+- Git, GitHub, Linux / Unix environments, Apache HTTP Server, DNS Configuration, VS Code
+
+---
+
+## 3. Notable Projects
+
+### 1. RIAAQE (Realtime Interview Analysis & Adaptive Questioning Engine)
+- **Role**: Lead Developer / Researcher
+- **Type**: B.Tech Main Capstone Project (2024–2025)
+- **Tech Stack**: Python, AI/ML, React.js, Node.js, Real-time Audio/Video Processing
+- **Summary**: An AI-driven interview evaluation system that performs real-time audio and facial cue confidence analysis and dynamically suggests adaptive follow-up questions to interviewers based on candidate responses.
+
+### 2. EXamin — Computer-Based Testing (CBT) Platform
+- **Role**: Full-Stack Developer
+- **Tech Stack**: React.js, Node.js, Express.js, MongoDB
+- **Summary**: A scalable online examination portal featuring section-based MCQ divisions, interactive question palettes, real-time timer tracking, and automated candidate evaluations.
+
+### 3. EduCCET — Student Academic Mobile App
+- **Role**: Mobile Developer
+- **Tech Stack**: Flutter, Dart, Android
+- **Summary**: A student companion mobile application designed for CCET engineering students to navigate course syllabi, compute credits, and plan their academic roadmap.
+
+### 4. Digital Library System
+- **Role**: Full-Stack Developer
+- **Type**: B.Tech Mini Project
+- **Tech Stack**: Web Technologies, Relational Database
+- **Summary**: A centralized digital catalog for university students providing rapid search, book lending workflows, and access to past university question papers (PYQs).
+
+---
+
+## 4. Experience & Milestones
+- **Android Development Intern** (2023) — Shrishti Innovative, Trivandrum: Hands-on Android mobile app development, architecture, and UI implementation.
+- **Data Mining & Analytics Workshop** (2024) — National Institute of Technology (NIT) Calicut: Advanced data analysis techniques and mining algorithms.
+- **100+ LeetCode Solved**: Algorithmic problem solving and data structures.
+- **10+ Open Source GitHub Repositories**: Active open-source contributor and software architect.
+
+---
+
+## 5. Contact & Hiring Intent
+Adithyan S Pillai is actively open to:
+- Software Engineer / Full-Stack Developer roles
+- Frontend / Backend Developer positions
+- Mobile App Development projects (Flutter / Android)
+- AI/ML engineering collaborations
+- Remote, hybrid, or on-site opportunities in India and globally
