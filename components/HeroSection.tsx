@@ -205,7 +205,7 @@ export default function HeroSection() {
             >
               <span className="w-4 h-px bg-[#111]" />
               <span className="font-mono text-[10px] tracking-[0.28em] uppercase text-[#888]">
-                Portfolio · 2025
+                Portfolio · {new Date().getFullYear()}
               </span>
             </motion.div>
 
@@ -323,7 +323,7 @@ export default function HeroSection() {
           >
             <span className="w-5 h-px bg-[#111]" />
             <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#888]">
-              Portfolio · 2025
+              Portfolio · {new Date().getFullYear()}
             </span>
           </motion.div>
 

@@ -114,7 +114,7 @@ const CARD_W   = 280;
 const CARD_GAP = 56;
 
 // Year labels that travel with the track (spaced evenly)
-const YEAR_LABELS = ["2019", "2020", "2021", "2022", "2023", "2024", "2025"];
+const YEAR_LABELS = ["2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026"];
 
 // ─── Type theme ───────────────────────────────────────────────────────────────
 

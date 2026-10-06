@@ -221,7 +221,7 @@ export default function ContactSection() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-white/30 text-xs tracking-wider text-center">
           {/* Left */}
-          <span>Adithyan S Pillai &copy; 2025</span>
+          <span>Adithyan S Pillai &copy; {new Date().getFullYear()}</span>
 
           {/* Center – AS logo */}
           <div
